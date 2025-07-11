@@ -11,4 +11,14 @@ export const helloWorld = inngest.createFunction(
   }
 );
 
+// Add the missing codeAgentFunction
+export const codeAgentFunction = inngest.createFunction(
+  { id: 'code-agent' },
+  { event: 'code/agent.run' },
+  async ({ event, step }) => {
+    await step.sleep('wait-a-moment', '1s');
+    return { message: `Code agent processed: ${event.data.query || 'No query provided'}` };
+  }
+);
+
 // Add more functions as needed
