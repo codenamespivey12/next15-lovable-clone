@@ -40,48 +40,84 @@ export const codeAgentFunction = inngest.createFunction(
       description: "An expert coding agent",
       system: PROMPT,
       model: (async (messages: any) => {
-        const response = await openai.responses.create({
-          model: "o4-mini",
-          input: messages,
-          text: {
-            "format": {
-              "type": "text"
+        try {
+          // Convert messages to input format for Responses API
+          let input: string;
+          if (Array.isArray(messages)) {
+            // Find the last user message or convert all messages to a conversation string
+            const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+            if (lastUserMessage) {
+              input = lastUserMessage.content;
+            } else {
+              // Fallback: convert all messages to a conversation string
+              input = messages.map(m => `${m.role}: ${m.content}`).join('\n');
             }
-          },
-          reasoning: {
-            "effort": "high",
-            "summary": null
-          },
-          tools: [
-            {
-              "type": "mcp",
-              "server_label": "context7",
-              "server_url": process.env.CONTEXT7_MCP_SERVER_URL || "",
-              "server_description": "context7",
-              "allowed_tools": [
-                "resolve-library-id",
-                "get-library-docs"
-              ],
-              "require_approval": "always"
-            }
-          ],
-          store: false
-        });
-        
-        // Access the response content safely
-        let content = "No response generated";
-        if (response && typeof response === 'object') {
-          if ('text' in response && response.text && typeof response.text === 'object') {
-            if ('value' in response.text) {
-              content = response.text.value as string;
+          } else if (typeof messages === 'string') {
+            input = messages;
+          } else {
+            input = JSON.stringify(messages);
+          }
+
+          const response = await openai.responses.create({
+            model: "o4-mini",
+            input: input,
+            text: {
+              "format": {
+                "type": "text"
+              }
+            },
+            reasoning: {
+              "effort": "high",
+              "summary": null
+            },
+            tools: [
+              {
+                "type": "mcp",
+                "server_label": "context7",
+                "server_url": process.env.CONTEXT7_MCP_SERVER_URL || "https://mcp.context7.com/mcp",
+                "server_description": "context7",
+                "allowed_tools": [
+                  "resolve-library-id",
+                  "get-library-docs"
+                ],
+                "require_approval": "never"
+              }
+            ],
+            store: false
+          });
+
+          // Parse the response correctly according to Responses API format
+          let content = "No response generated";
+
+          // Try to get content from output_text first (most direct)
+          if ((response as any).output_text) {
+            content = (response as any).output_text;
+          }
+          // Fallback to parsing the output array for message type
+          else if (response.output && Array.isArray(response.output)) {
+            const messageOutput = response.output.find((item: any) => item.type === 'message');
+            if (messageOutput && (messageOutput as any).content) {
+              content = (messageOutput as any).content;
             }
           }
+          // Additional fallback - try to extract any text content from the response
+          else if (response && typeof response === 'object') {
+            // Log the response structure for debugging
+            console.log("Response structure:", JSON.stringify(response, null, 2));
+            content = "Response received but could not extract content. Check logs for response structure.";
+          }
+
+          return {
+            content,
+            role: "assistant"
+          };
+        } catch (error) {
+          console.error("Error calling OpenAI Responses API:", error);
+          return {
+            content: "Error: Failed to generate response. Please try again.",
+            role: "assistant"
+          };
         }
-        
-        return {
-          content,
-          role: "assistant"
-        };
       }) as any,
       tools: [                                                                       // Herramientas del agente de código
         // Tools remain unchanged

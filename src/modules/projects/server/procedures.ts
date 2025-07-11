@@ -52,31 +52,42 @@ export const projectsRouter = createTRPCRouter({
       }),
     )
     .mutation(async({ input, ctx }) => {
+      try {
+        console.log("Creating project with input:", input);
+        console.log("User ID:", ctx.auth.userId);
 
-      const createdProject = await db.project.create({
-        data: {
-          userId: ctx.auth.userId,
-          name: generateSlug(2, {
-            format: "kebab",
-          }),
-          messages: {
-            create: {
-              content: input.value,
-              role: "USER",
-              type: "RESULT",
+        const createdProject = await db.project.create({
+          data: {
+            userId: ctx.auth.userId,
+            name: generateSlug(2, {
+              format: "kebab",
+            }),
+            messages: {
+              create: {
+                content: input.value,
+                role: "USER",
+                type: "RESULT",
+              }
             }
           }
-        }
-      })
+        })
 
-      await inngest.send({
-        name: "code-agent/run",
-        data: {
-          value: input.value,
-          projectId: createdProject.id
-        }
-      })
+        console.log("Project created:", createdProject.id);
 
-      return createdProject;
+        await inngest.send({
+          name: "code-agent/run",
+          data: {
+            value: input.value,
+            projectId: createdProject.id
+          }
+        })
+
+        console.log("Inngest event sent successfully");
+
+        return createdProject;
+      } catch (error) {
+        console.error("Error creating project:", error);
+        throw error;
+      }
     })
 })

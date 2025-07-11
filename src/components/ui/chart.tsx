@@ -104,6 +104,15 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+type TooltipPayloadItem = {
+  value?: string | number;
+  name?: string;
+  dataKey?: string;
+  payload?: Record<string, unknown>;
+  color?: string;
+  fill?: string;
+};
+
 function ChartTooltipContent({
   active,
   payload,
@@ -120,22 +129,15 @@ function ChartTooltipContent({
   labelKey,
 }: {
   active?: boolean;
-  payload?: Array<{
-    value?: any;
-    name?: string;
-    dataKey?: string;
-    payload?: any;
-    color?: string;
-    fill?: string;
-  }>;
+  payload?: Array<TooltipPayloadItem>;
   className?: string;
   indicator?: "line" | "dot" | "dashed";
   hideLabel?: boolean;
   hideIndicator?: boolean;
   label?: React.ReactNode;
-  labelFormatter?: (label: any, payload: any[]) => React.ReactNode;
+  labelFormatter?: (label: React.ReactNode, payload: TooltipPayloadItem[]) => React.ReactNode;
   labelClassName?: string;
-  formatter?: (value: any, name: string, item: any, index: number, payload: any) => React.ReactNode;
+  formatter?: (value: string | number, name: string, item: TooltipPayloadItem, index: number, payload: Record<string, unknown>) => React.ReactNode;
   color?: string;
   nameKey?: string;
   labelKey?: string;
@@ -196,7 +198,7 @@ function ChartTooltipContent({
         {payload.map((item, index) => {
           const key = `${nameKey || item.name || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
-          const indicatorColor = color || item.payload.fill || item.color
+          const indicatorColor = color || item.payload?.fill || item.color
 
           return (
             <div
@@ -277,7 +279,7 @@ function ChartLegendContent({
     dataKey?: string;
     color?: string;
     type?: string;
-    payload?: any;
+    payload?: Record<string, unknown>;
   }>;
   verticalAlign?: "top" | "middle" | "bottom";
   nameKey?: string;
