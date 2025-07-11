@@ -19,7 +19,9 @@ const nextConfig = {
     // This disables static generation for specific pages
     workerThreads: false,
     cpus: 1
-  }
+  },
+  // Add this to transpile packages that might cause issues
+  transpilePackages: ['@trpc/server', '@trpc/client', '@trpc/react-query']
 };
 
 module.exports = nextConfig;
