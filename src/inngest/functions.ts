@@ -15,6 +15,9 @@ interface AgentState {
   }
 }
 
+// Initialize Prisma client
+const prisma = new PrismaClient();
+
 export const codeAgentFunction = inngest.createFunction(
   
   { id: "code-agent" },
