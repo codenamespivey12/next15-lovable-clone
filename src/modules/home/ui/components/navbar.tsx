@@ -1,47 +1,32 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import UserControl from "@/components/user-control"
-import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs"
-import Image from "next/image"
 import Link from "next/link"
+import { UserButton } from "@clerk/nextjs"
+import { MoonIcon, SunIcon } from "lucide-react"
+import { useTheme } from "next-themes"
 
+import { Button } from "@/components/ui/button"
 
-const Navbar = () => {
+export const Navbar = () => {
+  const { setTheme, theme } = useTheme()
+
   return (
-    <nav className="p-4 bg-transparent fixed top-0 left-0 right-0 z-50 transition-all duration-200 border-b border-transparent">
-      <div className="max-w-5xl mx-auto w-full flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2">
-          <Image 
-            src="/logo.svg" 
-            alt="Logo" 
-            width={24} 
-            height={24} 
-          />
-        <span className="font-semibold text-lg">sixtyoneeighty</span>
+    <div className="border-b">
+      <div className="flex h-16 items-center px-4">
+        <Link href="/" className="flex items-center gap-x-2">
+          <span className="font-bold">Lovable Clone</span>
         </Link>
-
-        <div className="flex gap-2">
-          <SignedOut>
-            <SignUpButton>
-              <Button variant="outline" size="sm">
-                Sign Up
-              </Button>
-            </SignUpButton>
-            <SignInButton>
-              <Button  size="sm">
-                Sign In
-              </Button>
-            </SignInButton>
-          </SignedOut>
-
-          <SignedIn>
-            <UserControl showName={true} />
-          </SignedIn>
+        <div className="ml-auto flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+          </Button>
+          <UserButton afterSignOutUrl="/" />
         </div>
       </div>
-    </nav>
+    </div>
   )
 }
-
-export default Navbar

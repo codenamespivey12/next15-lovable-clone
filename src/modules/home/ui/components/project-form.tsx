@@ -1,56 +1,50 @@
 "use client"
 
-
 import { useState } from "react"
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import TextareaAutosize from "react-textarea-autosize";
-import { ArrowUpIcon, Loader2Icon } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { useTRPC } from "@/trpc/client";
-import { Button } from "@/components/ui/button";
-import { Form, FormField } from "@/components/ui/form";
-import { useRouter } from "next/navigation";
-import { PROJECT_TEMPLATES } from "../../constants";
-import { useClerk } from "@clerk/nextjs";
-
-
-
-
-
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import TextareaAutosize from "react-textarea-autosize"
+import { ArrowUpIcon, Loader2Icon } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { useTRPC } from "@/trpc/client"
+import { Button } from "@/components/ui/button"
+import { Form, FormField } from "@/components/ui/form"
+import { useRouter } from "next/navigation"
+import { PROJECT_TEMPLATES } from "../../constants"
+import { useClerk } from "@clerk/nextjs"
 
 const formSchema = z.object({
   value: z.string()
-    .min(1, { message: "Value is required" })
-    .max(10000, { message: "Value is too long" }),
+    .min(1, { message: "Prompt value is required" })
+    .max(10000, { message: "Prompt value is too long" }),
 })
 
 export const ProjectForm = () => {
-
-  const router = useRouter();
-  const clerk = useClerk();
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const router = useRouter()
+  const clerk = useClerk()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       value: ""
     }
-  });
+  })
 
   const createProject = useMutation(trpc.projects.create.mutationOptions({
     onSuccess: (data) => {
       queryClient.invalidateQueries(
         trpc.projects.getMany.queryOptions()
-      );
+      )
       router.push(`/projects/${data.id}`)
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(error.message)
       if(error.data?.code === "UNAUTHORIZED"){
         clerk.openSignIn()
       }
@@ -63,90 +57,66 @@ export const ProjectForm = () => {
     })
   }
 
-  const onSelect = (value: string) => { // Establece el valor del input del prompt y valida el formulario
-    form.setValue("value", value, {
-      shouldDirty: true,
-      shouldValidate: true,
-      shouldTouch: true,
-    })
+  const selectTemplate = (index: number) => {
+    setSelectedTemplate(index)
+    form.setValue("value", PROJECT_TEMPLATES[index].prompt)
   }
 
-
-  const [isFocused, setIsFocused] = useState(false);
-  const isPending = createProject.isPending;
-  const isButtonDisabled = isPending || !form.formState.isValid;
-
   return (
-    <Form {...form}>
-      <section className="space-y-6">
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className={cn(
-            "relative border p-4 rounded-xl bg-sidebar dark:sidebar transition-all",
-            isFocused && "shadow-xs",
-          )}
-        >
+    <div className="space-y-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="value"
             render={({ field }) => (
-              <TextareaAutosize
-                {...field}
-                disabled={isPending}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                minRows={2}
-                maxRows={8}
-                className="pt-4 resize-none border-none w-full outline-none bg-transparent"
-                placeholder="What would you like to build ?"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault();
-                    form.handleSubmit(onSubmit)(e);
-                  }
-                }}
-              />
+              <div className="relative">
+                <TextareaAutosize
+                  {...field}
+                  placeholder="Describe what you want to build..."
+                  className={cn(
+                    "resize-none w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                    "min-h-[100px]"
+                  )}
+                />
+                <Button
+                  size="sm"
+                  type="submit"
+                  disabled={createProject.isPending}
+                  className="absolute bottom-2 right-2"
+                >
+                  {createProject.isPending ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ArrowUpIcon className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             )}
           />
-
-          <div className="flex gapx-2 items-end justify-between pt-2">
-            <div className="text-[10px] text-muted-foreground font-mono">
-              <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                <span>&#8984;</span>Enter
-              </kbd>
-              &nbsp;to submit
-            </div>
-
-            <Button
-              disabled={isButtonDisabled}
-              className={cn(
-                "size-8 rounded-full",
-                isButtonDisabled && "bg-muted-foreground border"
-              )}
-            >
-              {isPending ? (
-                <Loader2Icon className="size-4 animate-spin" />
-              ) : (
-                <ArrowUpIcon />
-              )}
-            </Button>
-          </div>
         </form>
+      </Form>
 
-        <div className="flex-wrap justify-center gap-2 hidden md:flex max-w-3xl">
-          {PROJECT_TEMPLATES.map((template) => (
-            <Button
-              key={template.title}
-              variant="outline"
-              size="sm"
-              className="bg-white dark:bg-sidebar"
-              onClick={() => onSelect(template.prompt)}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium">Or try a template:</h3>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+          {PROJECT_TEMPLATES.map((template, index) => (
+            <div
+              key={index}
+              onClick={() => selectTemplate(index)}
+              className={cn(
+                "cursor-pointer rounded-md border p-3 transition-colors hover:bg-accent",
+                selectedTemplate === index && "border-primary"
+              )}
             >
-              {template.emoji} {template.title}
-            </Button>
+              <div className="flex items-center gap-2">
+                <span>{template.emoji}</span>
+                <span className="text-sm font-medium">{template.title}</span>
+              </div>
+            </div>
           ))}
         </div>
-      </section>
-    </Form>
+      </div>
+    </div>
   )
 }
