@@ -1,24 +1,21 @@
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { Providers } from './providers';
+import { ClerkProvider } from '@clerk/nextjs';
+import { TRPCProvider } from '@/providers/trpc-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'Next.js 15 App',
-  description: 'Built with Next.js 15',
-};
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <ClerkProvider>
+          <TRPCProvider>{children}</TRPCProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

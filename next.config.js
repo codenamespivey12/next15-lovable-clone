@@ -14,6 +14,12 @@ const nextConfig = {
   },
   // Disable static exports for now
   output: 'standalone',
+  // Add this to disable static generation for the home page
+  experimental: {
+    // This disables static generation for specific pages
+    workerThreads: false,
+    cpus: 1
+  }
 };
 
 module.exports = nextConfig;
