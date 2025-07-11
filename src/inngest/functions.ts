@@ -1,5 +1,5 @@
 import { inngest } from "./client";
-import { createAgent, createTool, createNetwork, type Tool, Any } from "@inngest/agent-kit";
+import { createAgent, createTool, createNetwork, type Tool } from "@inngest/agent-kit";
 import { Sandbox } from "@e2b/code-interpreter"
 import { getSandbox } from "./utils";
 import { z } from "zod";
@@ -69,7 +69,7 @@ export const codeAgentFunction = inngest.createFunction(
           content: response.text.value,
           role: "assistant"
         };
-      }) as Any,
+      }) as any,
       tools: [                                                                       // Herramientas del agente de código
         // Tools remain unchanged
         createTool({
