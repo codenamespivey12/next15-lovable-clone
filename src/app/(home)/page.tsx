@@ -29,7 +29,7 @@ const Page = () => {
           Build. Cool. Shit.
         </h1>
         <p className="tex-lg md:text-xl text-muted-foreground text-center"> 
-          Create apps and websites by chatting with AI
+          Create apps and websites with our AI assistant, Mojo!
         </p>
         <div className="max-w-3xl mx-auto w-full">
           <ProjectForm />
