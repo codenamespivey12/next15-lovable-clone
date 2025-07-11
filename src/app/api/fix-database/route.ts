@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client/edge';
+import prisma from '../../../lib/db';
 
 // This is a temporary API route to fix database schema issues
 export async function GET() {
-  const prisma = new PrismaClient();
-  
   try {
     // Check if Project table exists
     const tables = await prisma.$queryRaw`
@@ -53,7 +51,5 @@ export async function GET() {
   } catch (error) {
     console.error('Error fixing database:', error);
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
