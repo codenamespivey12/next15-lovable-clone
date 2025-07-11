@@ -1,11 +1,12 @@
 import { inngest } from "./client";
-import { createAgent, openai, createTool, createNetwork, type Tool } from "@inngest/agent-kit";
-import  { Sandbox } from "@e2b/code-interpreter"
+import { createAgent, createTool, createNetwork, type Tool } from "@inngest/agent-kit";
+import { Sandbox } from "@e2b/code-interpreter"
 import { getSandbox } from "./utils";
 import { z } from "zod";
 import { PROMPT } from "../prompt";
 import { lastAssistantTextMessageContent } from "./utils";
 import { PrismaClient } from "../generated/prisma";
+import OpenAI from "openai";
 
 interface AgentState {
   summary: string;
@@ -27,27 +28,47 @@ export const codeAgentFunction = inngest.createFunction(
       return sandbox.sandboxId;
     })
 
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const codeAgent = createAgent<AgentState>({                                      // Crear agente de código
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
-      model: openai({
-        model: "o4-mini",
-        apiKey: process.env.OPENAI_API_KEY,
-        defaultParameters: {
-          // Use the correct structure for the OpenAI Responses API
-          reasoning: { effort: "high" },
+      model: async (messages) => {
+        const response = await openai.responses.create({
+          model: "o4-mini",
+          input: messages,
+          text: {
+            "format": {
+              "type": "text"
+            }
+          },
+          reasoning: {
+            "effort": "high",
+            "summary": null
+          },
           tools: [
             {
-              type: "mcp",
-              server_label: "context7",
-              server_url: process.env.CONTEXT7_MCP_SERVER_URL || ""
+              "type": "mcp",
+              "server_label": "context7",
+              "server_url": process.env.CONTEXT7_MCP_SERVER_URL || "",
+              "server_description": "context7",
+              "allowed_tools": [
+                "resolve-library-id",
+                "get-library-docs"
+              ],
+              "require_approval": "always"
             }
           ],
-        },
-      }),
-      tools: [                                                                       // Herramientas del agente de código
+          store: false
+        });
         
+        return response;
+      },
+      tools: [                                                                       // Herramientas del agente de código
+        // Tools remain unchanged
         createTool({
           name: "terminal",
           description: "Use the terminal to run commands",
