@@ -1,35 +1,35 @@
 import { Prisma, PrismaClient } from "@/generated/prisma";
 
-
 const prisma = new PrismaClient();
 
-const userData: Prisma.UserCreateInput[] = [
+const projectData: Prisma.ProjectCreateInput[] = [
   {
-    name: "Alice",
-    email: "alice@prisma.io",
-    posts: {
+    name: "Sample Project 1",
+    userId: "user_123",
+    messages: {
       create: [
         {
-          title: "Join the Prisma Discord",
-          content: "https://pris.ly/discord",
-          published: true,
+          content: "Hello, this is a test message",
+          role: "USER",
+          type: "RESULT",
         },
         {
-          title: "Prisma on YouTube",
-          content: "https://pris.ly/youtube",
+          content: "This is a response message",
+          role: "ASSISTANT",
+          type: "RESULT",
         },
       ],
     },
   },
   {
-    name: "Bob",
-    email: "bob@prisma.io",
-    posts: {
+    name: "Sample Project 2",
+    userId: "user_456",
+    messages: {
       create: [
         {
-          title: "Follow Prisma on Twitter",
-          content: "https://www.twitter.com/prisma",
-          published: true,
+          content: "Another test message",
+          role: "USER",
+          type: "RESULT",
         },
       ],
     },
@@ -37,9 +37,17 @@ const userData: Prisma.UserCreateInput[] = [
 ];
 
 export async function main() {
-  for (const u of userData) {
-    await prisma.user.create({ data: u });
+  for (const p of projectData) {
+    await prisma.project.create({ data: p });
   }
 }
 
-main();
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
