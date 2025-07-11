@@ -19,17 +19,19 @@ interface AgentState {
 const prisma = new PrismaClient();
 
 export const codeAgentFunction = inngest.createFunction(
-  
+
   { id: "code-agent" },
   { event: "code-agent/run" },
 
   async ({ event, step }) => { // event contiene el propmt y el projectId
+    try {
+      console.log("Code agent function started with event:", JSON.stringify(event, null, 2));
 
-    const sandboxId = await step.run("get-sandbox-id", async () => {
-      const sandbox = await Sandbox.create("lovableclone-test16");
-      //await sandbox.setTimeout(60)
-      return sandbox.sandboxId;
-    })
+      const sandboxId = await step.run("get-sandbox-id", async () => {
+        const sandbox = await Sandbox.create("lovableclone-test16");
+        //await sandbox.setTimeout(60)
+        return sandbox.sandboxId;
+      })
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -288,6 +290,11 @@ export const codeAgentFunction = inngest.createFunction(
       files: result.state.data.files,
       summary: result.state.data.summary
     };
+
+    } catch (error) {
+      console.error("Error in code agent function:", error);
+      throw error;
+    }
   },
 );
 
