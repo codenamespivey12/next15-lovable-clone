@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client/edge';
 
 // This is a temporary API route to fix database schema issues
 export async function GET() {
@@ -45,39 +45,6 @@ export async function GET() {
         `;
       } else {
         message += 'userId column already exists.\n';
-      }
-    }
-    
-    // Check Message table and its relation to Project
-    const messageTable = await prisma.$queryRaw`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name = 'Message'
-    `;
-    
-    if (Array.isArray(messageTable) && messageTable.length > 0) {
-      message += 'Message table exists. Checking foreign key...\n';
-      
-      // Check if foreign key exists
-      const fkConstraint = await prisma.$queryRaw`
-        SELECT constraint_name
-        FROM information_schema.table_constraints
-        WHERE table_schema = 'public'
-        AND table_name = 'Message'
-        AND constraint_type = 'FOREIGN KEY'
-        AND constraint_name LIKE '%projectId%'
-      `;
-      
-      if (Array.isArray(fkConstraint) && fkConstraint.length === 0) {
-        message += 'Foreign key constraint does not exist. Adding it...\n';
-        await prisma.$executeRaw`
-          ALTER TABLE "Message" 
-          ADD CONSTRAINT "Message_projectId_fkey" 
-          FOREIGN KEY ("projectId") 
-          REFERENCES "Project"("id") 
-          ON DELETE CASCADE ON UPDATE CASCADE
-        `;
       }
     }
     
