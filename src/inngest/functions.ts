@@ -66,7 +66,7 @@ export const codeAgentFunction = inngest.createFunction(
         });
         
         return {
-          content: response.text.value,
+          content: response.text?.value || "No response generated",
           role: "assistant"
         };
       }) as any,
