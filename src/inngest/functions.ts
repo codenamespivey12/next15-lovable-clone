@@ -5,7 +5,7 @@ import { getSandbox } from "./utils";
 import { z } from "zod";
 import { PROMPT } from "../prompt";
 import { lastAssistantTextMessageContent } from "./utils";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma";
 
 interface AgentState {
   summary: string;

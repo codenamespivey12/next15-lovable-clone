@@ -1,5 +1,5 @@
 import { inngest } from "@/inngest/client";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
 import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -13,7 +13,7 @@ export const messagesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input, ctx }) => {
-      const messages = await prisma.message.findMany({
+      const messages = await db.message.findMany({
         where: {
           projectId: input.projectId,
           project: {
@@ -41,7 +41,7 @@ export const messagesRouter = createTRPCRouter({
       }),
     )
     .mutation(async({ input, ctx }) => {
-      const existingProject = await prisma.project.findUnique({
+      const existingProject = await db.project.findUnique({
         where: {
           id: input.projectId,
           userId: ctx.auth.userId,
@@ -52,7 +52,7 @@ export const messagesRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
       }
 
-      const createdMessage = await prisma.message.create({
+      const createdMessage = await db.message.create({
         data: {
           projectId: existingProject.id,
           content: input.value,

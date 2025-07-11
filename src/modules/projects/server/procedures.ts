@@ -1,5 +1,5 @@
 import { inngest } from "@/inngest/client";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
 import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { z } from "zod";
 import { generateSlug } from "random-word-slugs";
@@ -15,7 +15,7 @@ export const projectsRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-      const existingProject = await prisma.project.findUnique({
+      const existingProject = await db.project.findUnique({
         where: {
           id: input.id,
           userId: ctx.auth.userId,
@@ -31,7 +31,7 @@ export const projectsRouter = createTRPCRouter({
 
   getMany: protectedProcedure
     .query(async ({ ctx }) => {
-      const projects = await prisma.project.findMany({
+      const projects = await db.project.findMany({
         where:{
           userId: ctx.auth.userId,
         },
@@ -53,7 +53,7 @@ export const projectsRouter = createTRPCRouter({
     )
     .mutation(async({ input, ctx }) => {
 
-      const createdProject = await prisma.project.create({
+      const createdProject = await db.project.create({
         data: {
           userId: ctx.auth.userId,
           name: generateSlug(2, {
