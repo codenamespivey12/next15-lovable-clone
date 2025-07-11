@@ -65,8 +65,18 @@ export const codeAgentFunction = inngest.createFunction(
           store: false
         });
         
+        // Access the response content safely
+        let content = "No response generated";
+        if (response && typeof response === 'object') {
+          if ('text' in response && response.text && typeof response.text === 'object') {
+            if ('value' in response.text) {
+              content = response.text.value as string;
+            }
+          }
+        }
+        
         return {
-          content: response.text?.value || "No response generated",
+          content,
           role: "assistant"
         };
       }) as any,
