@@ -1,9 +1,9 @@
-import { Prisma, PrismaClient } from "@/generated/prisma";
-
+import { PrismaClient } from "@/generated/prisma";
 
 const prisma = new PrismaClient();
 
-const userData: Prisma.UserCreateInput[] = [
+// Define the user data without relying on Prisma types
+const userData = [
   {
     name: "Alice",
     email: "alice@prisma.io",
@@ -37,9 +37,28 @@ const userData: Prisma.UserCreateInput[] = [
 ];
 
 export async function main() {
-  for (const u of userData) {
-    await prisma.user.create({ data: u });
+  try {
+    console.log(`Start seeding ...`);
+    
+    for (const u of userData) {
+      const user = await prisma.user.create({ data: u });
+      console.log(`Created user with id: ${user.id}`);
+    }
+    
+    console.log(`Seeding finished.`);
+  } catch (error) {
+    console.error(`Error seeding database:`, error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-main();
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
