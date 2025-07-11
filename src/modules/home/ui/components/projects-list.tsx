@@ -1,51 +1,73 @@
-"use client"
+'use client'
 
-import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { useTRPC } from "@/trpc/client"
-import { Loader2Icon } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
+import { useQuery } from "@tanstack/react-query"
 import { formatDistanceToNow } from "date-fns"
+import Image from "next/image"
+import Link from "next/link"
 
-export const ProjectsList = () => {
-  const router = useRouter()
-  const trpc = useTRPC()
+
+
+
+const ProjectsList = () => {
   
-  const { data: projects, isLoading } = trpc.projects.getMany.useQuery()
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
-  if (!projects?.length) {
-    return (
-      <div className="flex flex-col items-center justify-center py-10 text-center">
-        <p className="text-sm text-muted-foreground">
-          No projects found. Create your first project above!
-        </p>
-      </div>
-    )
-  }
+  const trpc = useTRPC();
+  const { user } = useUser();
+  const { data: projects } = useQuery(trpc.projects.getMany.queryOptions())
+  
+  if(!user) return null;
 
   return (
-    <div className="mt-8 space-y-4">
-      <h2 className="text-xl font-semibold">Your Projects</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {projects.map((project) => (
-          <div 
-            key={project.id}
-            onClick={() => router.push(`/projects/${project.id}`)}
-            className="cursor-pointer rounded-lg border p-4 transition-colors hover:bg-accent"
-          >
-            <h3 className="font-medium">{project.name}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Created {formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}
+    <div className="w-full bg-white dark:bg-sidebar rounded-xl p-8 border flex flex-col gap-y-6">
+      <h2 className="text-2xl font-semibold">
+        {user?.firstName}&apos;s Vibes
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {projects?.length === 0 && (
+          <div className="col-span-full text-center">
+            <p className="text-muted-foreground text-sm">
+              No projects found
             </p>
           </div>
+        )}
+
+        {projects?.map((project) => (
+          <Button
+            key={project.id}
+            variant="outline"
+            className="font-normal h-auto justify-start w-full text-start p-4"
+            asChild
+          >
+            <Link href={`/projects/${project.id}`}>
+              <div className="flex items-center gap-x-4">
+                <Image
+                  src="/logo.svg"
+                  alt="Assistant logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
+
+                <div className="flex flex-col-reverse">
+                  <h3 className="truncate font-medium">
+                    {project.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDistanceToNow(project.updatedAt,{
+                      addSuffix: true,
+                    })}
+                  </p>
+                </div>
+              </div>  
+            </Link>
+          </Button>
         ))}
       </div>
     </div>
   )
 }
+
+export default ProjectsList

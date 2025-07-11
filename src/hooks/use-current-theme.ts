@@ -1,8 +1,12 @@
-"use client"
+import { useTheme } from "next-themes";
 
-import { useTheme } from "next-themes"
+export const useCurrentTheme = () => {
+  
+  const { theme, systemTheme } = useTheme();
 
-export function useCurrentTheme() {
-  const { resolvedTheme } = useTheme()
-  return resolvedTheme as "light" | "dark" | undefined
+  if(theme === "dark" || theme === "ligth"){
+    return theme;
+  }
+
+  return systemTheme;
 }
