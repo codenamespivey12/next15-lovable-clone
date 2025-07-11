@@ -38,7 +38,7 @@ export const codeAgentFunction = inngest.createFunction(
           reasoning: { effort: "high" },
           tools: [
             {
-              type: "function", // Changed from "mcp" to "function"
+              type: "function",
               function: {
                 name: "context7",
                 description: "Search code context using Context7",
@@ -52,13 +52,16 @@ export const codeAgentFunction = inngest.createFunction(
                   },
                   required: ["query"]
                 }
-              },
-              // These properties will be used internally to connect to the Context7 MCP server
-              server_label: "context7",
-              server_url: process.env.CONTEXT7_MCP_SERVER_URL || "",
+              }
             },
           ],
         },
+        // Configure the MCP connection separately
+        mcp: {
+          context7: {
+            serverUrl: process.env.CONTEXT7_MCP_SERVER_URL || ""
+          }
+        }
       }),
       tools: [                                                                       // Herramientas del agente de código
         
