@@ -1,5 +1,5 @@
 import { inngest } from "./client";
-import { createAgent, createTool, createNetwork, type Tool } from "@inngest/agent-kit";
+import { createAgent, createTool, createNetwork, type Tool, Any } from "@inngest/agent-kit";
 import { Sandbox } from "@e2b/code-interpreter"
 import { getSandbox } from "./utils";
 import { z } from "zod";
@@ -36,7 +36,7 @@ export const codeAgentFunction = inngest.createFunction(
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
-      model: async (messages) => {
+      model: (async (messages) => {
         const response = await openai.responses.create({
           model: "o4-mini",
           input: messages,
@@ -65,12 +65,11 @@ export const codeAgentFunction = inngest.createFunction(
           store: false
         });
         
-        // Convert the OpenAI response to the format expected by agent-kit
         return {
           content: response.text.value,
           role: "assistant"
         };
-      },
+      }) as Any,
       tools: [                                                                       // Herramientas del agente de código
         // Tools remain unchanged
         createTool({
