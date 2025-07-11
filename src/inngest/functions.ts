@@ -27,6 +27,14 @@ export const codeAgentFunction = inngest.createFunction(
     try {
       console.log("Code agent function started with event:", JSON.stringify(event, null, 2));
 
+      // Temporary simplified version to test
+      return {
+        sandboxUrl: "https://test.e2b.dev",
+        title: "Test Fragment",
+        files: {},
+        summary: "Test run - function is working"
+      };
+
       const sandboxId = await step.run("get-sandbox-id", async () => {
         const sandbox = await Sandbox.create("lovableclone-test16");
         //await sandbox.setTimeout(60)
