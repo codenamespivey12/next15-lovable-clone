@@ -65,7 +65,11 @@ export const codeAgentFunction = inngest.createFunction(
           store: false
         });
         
-        return response;
+        // Convert the OpenAI response to the format expected by agent-kit
+        return {
+          content: response.text.value,
+          role: "assistant"
+        };
       },
       tools: [                                                                       // Herramientas del agente de código
         // Tools remain unchanged
