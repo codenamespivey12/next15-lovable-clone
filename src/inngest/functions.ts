@@ -35,33 +35,16 @@ export const codeAgentFunction = inngest.createFunction(
         model: "o4-mini",
         apiKey: process.env.OPENAI_API_KEY,
         defaultParameters: {
+          // Use the correct structure for the OpenAI Responses API
           reasoning: { effort: "high" },
           tools: [
             {
-              type: "function",
-              function: {
-                name: "context7",
-                description: "Search code context using Context7",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    query: {
-                      type: "string",
-                      description: "The search query"
-                    }
-                  },
-                  required: ["query"]
-                }
-              }
-            },
+              type: "mcp",
+              server_label: "context7",
+              server_url: process.env.CONTEXT7_MCP_SERVER_URL || ""
+            }
           ],
         },
-        // Configure the MCP connection separately
-        mcp: {
-          context7: {
-            serverUrl: process.env.CONTEXT7_MCP_SERVER_URL || ""
-          }
-        }
       }),
       tools: [                                                                       // Herramientas del agente de código
         
