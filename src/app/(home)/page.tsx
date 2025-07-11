@@ -1,63 +1,44 @@
-'use client';
+"use client"
 
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { trpc } from '@/lib/trpc/client';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input";
+import { ProjectForm } from "@/modules/home/ui/components/project-form";
+import ProjectsList from "@/modules/home/ui/components/projects-list";
+import { useTRPC } from "@/trpc/client";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
-export default function Home() {
-  const [greeting, setGreeting] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Use trpc in a try/catch block to handle errors gracefully
-  useEffect(() => {
-    const fetchGreeting = async () => {
-      try {
-        // Only run on client
-        if (typeof window === 'undefined') return;
-        
-        setIsLoading(true);
-        const result = await trpc.hello.useQuery({ name: 'visitor' }).data;
-        if (result) {
-          setGreeting(result.greeting);
-        } else {
-          setGreeting('Hello world!');
-        }
-      } catch (err) {
-        console.error('Failed to fetch greeting:', err);
-        setError('Failed to load data');
-        setGreeting('Hello world!');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchGreeting();
-  }, []);
+const Page = () => {
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-center font-mono text-sm flex flex-col">
-        <h1 className="text-4xl font-bold mb-8">Welcome to Next.js 15</h1>
-        
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : error ? (
-          <p className="text-red-500 mb-4">{error}</p>
-        ) : (
-          <p className="mb-4">{greeting || 'Hello world!'}</p>
-        )}
-        
-        <div className="flex gap-4 mt-8">
-          <Button asChild>
-            <Link href="/sign-in">Sign In</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/sign-up">Sign Up</Link>
-          </Button>
+    <div className="flex flex-col max-w-5xl mx-auto w-full">
+      <section className="space-y-6 py-[16vh] 2xl:py-38">
+        <div className="flex flex-col items-center">
+          <Image 
+            src="/logo.svg"
+            alt="Assistant logo"
+            width={50}
+            height={50}
+            className="hidden md:block"
+          />
         </div>
-      </div>
-    </main>
-  );
+        <h1 className="text-2xl md:text-5xl font-bold text-center">
+          Build something with Mojo
+        </h1>
+        <p className="tex-lg md:text-xl text-muted-foreground text-center"> 
+          Create apps and websites by chatting with AI
+        </p>
+        <div className="max-w-3xl mx-auto w-full">
+          <ProjectForm />
+        </div>
+      </section>
+
+      <ProjectsList />
+    </div>
+  )
 }
+
+export default Page
