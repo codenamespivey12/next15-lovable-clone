@@ -36,7 +36,7 @@ export const codeAgentFunction = inngest.createFunction(
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
-      model: (async (messages) => {
+      model: (async (messages: any) => {
         const response = await openai.responses.create({
           model: "o4-mini",
           input: messages,
