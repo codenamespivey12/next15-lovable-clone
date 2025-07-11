@@ -18,7 +18,7 @@ const Navbar = () => {
             width={24} 
             height={24} 
           />
-        <span className="font-semibold text-lg">sixtyoneeighty</span>
+          <span className="font-semibold text-lg">Lovable</span>
         </Link>
 
         <div className="flex gap-2">
